@@ -62,37 +62,16 @@ For training a model adding PoS tags as feature, option `-p` must be used.
 
 ## Use the generated model
 
-You can use the generated model with new texts. `predict_crf.py` expects a file with text already tokenized in columns (one token per line).
+You can use the generated model with new texts. `predict_crf.py` can process a text file, and it relies on `spacy` for the tokenization.
 
 **Example**
 
 ```
-Mi
-amigo
-Juan
-visitó
-la
-ciudad
-de
-Santiago
-este
-año
-.
-
-El
-Ministerio
-de
-Industria
-y
-Competitividad
-financia
-el
-proyecto
-.
+Mi amigo Juan visitó la ciudad de Santiago este año. El Ministerio de Industria y Competitividad financia el proyecto.
 ```
 
 ```
-python3 predict_crf.py -m crf-model test.txt
+❯ python3 predict_crf.py -m crf-model -s es_core_news_lg test.txt
 ```
 
 ***Results***
@@ -119,5 +98,36 @@ Competitividad I-ORG
 financia O
 el O
 proyecto O
+. O
+```
+
+If no input file is provided, the standard input is read. When you are using a model that takes into account PoS tags as features, you should use the option `with-pos`.
+
+```
+❯ python3 predict_crf.py --with-pos -m es_scq-ner_crf_sm_withpos -s es_core_news_lg
+La escritora María Oruña firmará libros este jueves en Santiago.
+Paulo Coelho escribió El diario de un mago.
+<Ctrl+D>
+
+La O
+escritora O
+María B-PER
+Oruña I-PER
+firmará O
+libros O
+este O
+jueves O
+en O
+Santiago B-LOC
+. O
+
+Paulo B-PER
+Coelho I-PER
+escribió O
+El B-MISC
+diario I-MISC
+de I-MISC
+un I-MISC
+mago I-MISC
 . O
 ```
