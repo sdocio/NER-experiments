@@ -1,17 +1,12 @@
 import argparse
-import warnings
-import sys
-import sklearn_crfsuite
 import pickle
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import classification_report, accuracy_score, make_scorer
-from sklearn_crfsuite.metrics import sequence_accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 from seqeval.metrics import classification_report as seq_classification_report
 from itertools import chain
 from IOB import IOB
-
-
-__version = '0.0.2'
+from features import CRFFeatures
+from config import version, test_size, random_state, shuffle
 
 
 def parse_args():
@@ -22,10 +17,17 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        '-v',
+        '-V',
         '--version',
         action='version',
-        version=f'%(prog)s {__version}'
+        version=f'%(prog)s {version}'
+    )
+    parser.add_argument(
+        '-p',
+        '--with-pos',
+        action='store_true',
+        default=False,
+        help='use POS tags as feature'
     )
     parser.add_argument(
         '-m',
@@ -50,20 +52,20 @@ def flatten(y):
 
 args = parse_args()
 iob = IOB()
+feats = CRFFeatures(with_pos=args.with_pos)
 crf = pickle.load(open(args.model, 'rb'))
 
 sentences = iob.parse_file(args.dataset)
 train, test = train_test_split(
     sentences,
-    test_size=crf.test_size,
-    random_state=crf.random_state,
-    shuffle=crf.shuffle
+    test_size=test_size,
+    random_state=random_state,
+    shuffle=shuffle
 )
 
-X_test = [crf.sent2features(s) for s in test]
-y_test = [crf.sent2labels(s) for s in test]
+X_test = [feats.sent2features(s) for s in test]
+y_test = [feats.sent2labels(s) for s in test]
 
-# predict
 y_pred = crf.predict(X_test)
 
 labels = sorted(
@@ -75,13 +77,6 @@ accuracy = crf.score(X_test, y_test)
 
 print(results)
 print()
-print(f"Accuracy: {accuracy}")
-
-print()
 
 results = seq_classification_report(y_test, y_pred)
 print(results)
-# print(
-# flat_classification_report(y_test, y_pred, labels=sorted_labels, digits=3))
-
-# scores = cross_val_score(clf, X, y, cv=5)

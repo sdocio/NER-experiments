@@ -1,5 +1,3 @@
-import sklearn_crfsuite
-
 pos_map = {
     'ADJ': 'A',
     'ADP': 'S',
@@ -21,13 +19,8 @@ pos_map = {
 }
 
 
-class CRF(sklearn_crfsuite.CRF):
-    test_size = 0.2
-    random_state = None
-    shuffle = True
-
-    def __init__(self, with_pos, **kwargs):
-        super().__init__(**kwargs)
+class CRFFeatures:
+    def __init__(self, with_pos=False):
         self.with_pos = with_pos
 
     def word2features(self, sent, i):

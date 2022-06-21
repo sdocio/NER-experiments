@@ -1,13 +1,11 @@
 import argparse
 import pickle
-import sys
+import sklearn_crfsuite
 from itertools import chain
 from sklearn.model_selection import train_test_split
-from CRF import CRF
 from IOB import IOB
-
-
-__version = '0.0.2'
+from features import CRFFeatures
+from config import version, test_size, random_state, shuffle
 
 
 def parse_args():
@@ -21,7 +19,7 @@ def parse_args():
         '-V',
         '--version',
         action='version',
-        version=f'%(prog)s {__version}'
+        version=f'%(prog)s {version}'
     )
     parser.add_argument(
         '-v',
@@ -56,8 +54,8 @@ def parse_args():
 
 args = parse_args()
 iob = IOB()
-crf = CRF(
-    args.with_pos,
+feats = CRFFeatures(with_pos=args.with_pos)
+crf = sklearn_crfsuite.CRF(
     algorithm='lbfgs',
     c1=0.1,
     c2=0.1,
@@ -65,16 +63,13 @@ crf = CRF(
     all_possible_transitions=True,
     verbose=args.verbose,
 )
-crf.test_size = 0.2
-crf.random_state = 42
-crf.shuffle = True
 
 sentences = iob.parse_file(args.dataset)
 train, test = train_test_split(
     sentences,
-    test_size=crf.test_size,
-    random_state=crf.random_state,
-    shuffle=crf.shuffle
+    test_size=test_size,
+    random_state=random_state,
+    shuffle=shuffle
 )
 
 if args.verbose:
@@ -93,12 +88,12 @@ if args.verbose:
     print(
         "test size (in sentences): ",
         len(test), "(%2.2f%%)" % ((len(test)*100)/len(sentences)))
-    print("random_state: ", crf.random_state)
-    print("shuffle: ", crf.shuffle)
+    print("random_state: ", random_state)
+    print("shuffle: ", shuffle)
     print()
 
-X_train = [crf.sent2features(s) for s in train]
-y_train = [crf.sent2labels(s) for s in train]
+X_train = [feats.sent2features(s) for s in train]
+y_train = [feats.sent2labels(s) for s in train]
 
 crf.fit(X_train, y_train)
 pickle.dump(crf, open(args.output, 'wb'))
