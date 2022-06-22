@@ -78,5 +78,5 @@ accuracy = crf.score(X_test, y_test)
 print(results)
 print()
 
-results = seq_classification_report(y_test, y_pred)
+results = seq_classification_report(y_test, y_pred, digits=3)
 print(results)
