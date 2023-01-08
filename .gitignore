@@ -129,7 +129,12 @@ dmypy.json
 .pyre/
 
 # other
+*/old/*
 old/*
 */doc/*
 */models/*
+model
+base_config.cfg
 datasets
+dataset
+*/training/*
