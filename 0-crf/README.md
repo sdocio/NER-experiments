@@ -50,15 +50,18 @@ Sigüeiro PROPN B-LOC
 
 The dataset is split 80-20% for training and test.
 
-```python train_crf.py dataset.iob -v -o crf.model```
+```
+❯ mv sample_config.py config.py
+❯ python train_crf.py dataset.iob -v -o crf.model
+```
 
 For training a model adding PoS tags as feature, option `-p` must be used.
 
 ```python train_crf.py dataset-with-pos.iob -p -v -o crf-pos.model```
 
-### Test
+## Test
 
-```python test_crf.py -m crf.model dataset.iob```
+```❯ python test_crf.py -m crf.model dataset.iob```
 
 ## Use the generated model
 
@@ -71,7 +74,9 @@ Mi amigo Juan visitó la ciudad de Santiago este año. El Ministerio de Industri
 ```
 
 ```
-❯ python3 predict_crf.py -m crf-model -s es_core_news_lg test.txt
+❯ pip install spacy
+❯ python -m spacy download es_core_news_lg
+❯ python3 predict_crf.py -t -m crf-model -s es_core_news_lg test.txt
 ```
 
 ***Results***
@@ -101,14 +106,12 @@ proyecto O
 . O
 ```
 
-If no input file is provided, the standard input is read. When you are using a model that takes into account PoS tags as features, you should use the option `with-pos`.
+If you are using a model that takes into account PoS tags as features, you should use the option `with-pos`.
 
 ```
-❯ python3 predict_crf.py --with-pos -m es_scq-ner_crf_sm_withpos -s es_core_news_lg
-La escritora María Oruña firmará libros este jueves en Santiago.
-Paulo Coelho escribió El diario de un mago.
-<Ctrl+D>
-
+❯ echo "La escritora María Oruña firmará libros este jueves en Santiago.
+Paulo Coelho escribió El diario de un mago." > test.txt
+❯ python3 predict_crf.py -t --with-pos -m es_scq-ner_crf_sm_withpos -s es_core_news_lg test.txt
 La O
 escritora O
 María B-PER
@@ -121,6 +124,31 @@ en O
 Santiago B-LOC
 . O
 
+Paulo B-PER
+Coelho I-PER
+escribió O
+El B-MISC
+diario I-MISC
+de I-MISC
+un I-MISC
+mago I-MISC
+. O
+```
+
+The script can also be used with tokenized text, in IOB2 format. In this case, labels present in the IOB2 format are not taken into account.
+
+```
+❯ echo "Paulo O
+Coelho O
+escribió O
+El O
+diario O
+de O
+un O
+mago O
+. O" > test.iob
+
+❯ python3 predict_crf.py -i -m es_scq-ner_crf_sm_tuned text.iob
 Paulo B-PER
 Coelho I-PER
 escribió O
