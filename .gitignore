@@ -137,5 +137,6 @@ model
 base_config.cfg
 datasets
 dataset
+*/config.py
 */training/*
 */results/*

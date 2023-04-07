@@ -5,7 +5,10 @@ from itertools import chain
 from sklearn.model_selection import train_test_split
 from IOB import IOB
 from features import CRFFeatures
-from config import version, test_size, random_state, shuffle
+from config import (
+    version, test_size, random_state, shuffle,
+    c1, c2, max_iterations, all_possible_transitions
+)
 
 
 def parse_args():
@@ -57,10 +60,10 @@ iob = IOB()
 feats = CRFFeatures(with_pos=args.with_pos)
 crf = sklearn_crfsuite.CRF(
     algorithm='lbfgs',
-    c1=0.1,
-    c2=0.1,
-    max_iterations=100,
-    all_possible_transitions=True,
+    c1=c1,
+    c2=c2,
+    max_iterations=max_iterations,
+    all_possible_transitions=all_possible_transitions,
     verbose=args.verbose,
 )
 
