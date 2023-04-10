@@ -131,6 +131,7 @@ dmypy.json
 # other
 */old/*
 old/*
+doc/*
 */doc/*
 */models/*
 model
