@@ -133,7 +133,7 @@ dmypy.json
 old/*
 doc/*
 */doc/*
-*/models/*
+**/models/*
 model
 base_config.cfg
 datasets
