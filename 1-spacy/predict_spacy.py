@@ -1,5 +1,4 @@
 import argparse
-import re
 import spacy
 import sys
 import warnings
@@ -25,6 +24,12 @@ class IOB:
             for raw in self._read_sentences_from_file(self._ifile)
         ]
 
+    def _parse_sentence(self, raw_sentence):
+        return [
+            tuple(token.split(self._sep))
+            for token in raw_sentence.strip().split("\n")
+        ]
+
     def _read_sentences_from_file(self, ifile):
         raw_sentence = ""
         try:
@@ -46,23 +51,16 @@ class IOB:
             print(err, file=sys.stderr)
             sys.exit()
 
-    def _parse_sentence(self, raw_sentence):
-        return [
-            tuple(token.split(self._sep))
-            for token in raw_sentence.strip().split("\n")
-        ]
 
-    @classmethod
-    def token_to_iob(self, token):
-        iob = token.ent_iob_
-        return (
-            token.ent_iob_ if token.ent_iob_ == 'O'
-            else f'{token.ent_iob_}-{token.ent_type_}'
-        )
+def token_to_iob(token):
+    return (
+        token.ent_iob_ if token.ent_iob_ == 'O'
+        else f'{token.ent_iob_}-{token.ent_type_}'
+    )
 
 
 def parse_args():
-    description = "Eval results from a NER"
+    description = "Predict and evaluate NER tags using a spaCy model"
 
     parser = argparse.ArgumentParser(
         description=description,
@@ -71,7 +69,7 @@ def parse_args():
     parser.add_argument(
         'dataset',
         type=str,
-        help='test dataset to be evaluated',
+        help='IOB input file',
     )
     parser.add_argument(
         '-m',
@@ -79,7 +77,14 @@ def parse_args():
         default='model-best',
         type=str,
         metavar='MODEL',
-        help='model to be evaluated'
+        help='model'
+    )
+    parser.add_argument(
+        '-e',
+        '--eval',
+        action='store_true',
+        default=False,
+        help='Evaluation only'
     )
 
     return parser.parse_args()
@@ -92,30 +97,34 @@ def flatten(y):
 args = parse_args()
 
 nlp = spacy.load(args.model)
-
-sents = [
+sentences = [
     [token for token in sent] for sent in IOB(args.dataset).convert_file()
 ]
-golden = [[token[-1] for token in sent] for sent in sents]
-tokens = [[token[0] for token in sent] for sent in sents]
-
-predict = []
-for sent in tqdm(tokens):
-    parsed = nlp(spacy.tokens.Doc(nlp.vocab, sent))
-    predict.append([
-        IOB.token_to_iob(token)
-        for token in nlp(spacy.tokens.Doc(nlp.vocab, sent))
-    ])
-
+golden = [[token[-1] for token in sent] for sent in sentences]
 labels = sorted(
     [label for label in TAGS if label != 'O'],
     key=lambda name: (name[1:], name[0]))
 
-results = classification_report(
-    flatten(golden), flatten(predict), labels=labels, digits=3)
+predict = []
+for sent in tqdm(sentences):
+    tokens = [token[0] for token in sent]
+    predict.append([
+        (token.text, token_to_iob(token))
+        for token in nlp(spacy.tokens.Doc(nlp.vocab, tokens))
+    ])
+y_pred = [[token[-1] for token in sent] for sent in predict]
 
-print(results)
+if not args.eval:
+    for sent in predict:
+        for token in sent:
+            print(" ".join(token))
+        print()
+
+results = classification_report(
+    flatten(golden), flatten(y_pred), labels=labels, digits=3)
+
+print(results, file=sys.stderr)
 print()
 
-results = seq_classification_report(golden, predict, digits=3)
-print(results)
+results = seq_classification_report(golden, y_pred, digits=3)
+print(results, file=sys.stderr)
