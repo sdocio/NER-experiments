@@ -140,3 +140,4 @@ datasets
 dataset
 */config.py
 **/results/*
+**/logs/*

@@ -6,3 +6,4 @@
 | [`1-spacy`](https://github.com/sdocio/NER-experiments/tree/main/1-spacy) | spaCy | `spacy` |
 | [`2-transformers`](https://github.com/sdocio/NER-experiments/tree/main/2-transformers) | transformers | `transformers` |
 | [`3-prompting`](https://github.com/sdocio/NER-experiments/tree/main/3-prompting) | prompting |  |
+| [`4-lstm-crf`](https://github.com/sdocio/NER-experiments/tree/main/4-lstm-crf) | BiLSTM-CRF |  |
