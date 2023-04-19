@@ -1,3 +1,6 @@
+"""
+Code adapted from https://github.com/yuhaozhang/neural-ner
+"""
 import argparse
 import os
 import random
