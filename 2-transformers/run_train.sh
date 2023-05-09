@@ -11,15 +11,21 @@ SEED=42
 LOAD_BEST_MODEL_AT_END=True
 EVAL_STRATEGY="no"
 SAVE_STRATEGY="no"
-TRAIN_FILE="data/train.json"
-VALIDATION_FILE="data/validation.json"
+TRAIN_FILE="dataset/train.json"
+VALIDATION_FILE="dataset/validation.json"
 ###########################################################################
 
 
 
 ##### config ##############################################################
-declare -A models=([roberta-base-bne]="PlanTL-GOB-ES/roberta-base-bne" [xlm-roberta-large]="xlm-roberta-large" [roberta-large-bne]="PlanTL-GOB-ES/roberta-large-bne" [spanberta]="chriskhanhtran/spanberta" [bert-base-multilingual-cased]="bert-base-multilingual-cased")
-declare -A output=([roberta-base-bne]="models/roberta-base-bne" [xlm-roberta-large]="models/xlm-roberta-large" [roberta-large-bne]="models/roberta-large-bne" [spanberta]="models/spanberta" [bert-base-multilingual-cased]="models/bert-base-multilingual-cased")
+declare -A models=([bne-base]="PlanTL-GOB-ES/roberta-base-bne" [xlm-base]="xlm-roberta-base" [xlm-large]="xlm-roberta-large" [bne-large]="PlanTL-GOB-ES/roberta-large-bne" [spanberta]="chriskhanhtran/spanberta" [bert]="dccuchile/bert-base-spanish-wwm-cased")
+declare -A output=([bne-base]="models/es_trf_ner_cds_bne-base" [xlm-base]="models/es_trf_ner_cds_xlm-base" [xlm-large]="models/es_trf_ner_cds_xlm-large" [bne-large]="models/es_trf_ner_cds_bne-large" [spanberta]="models/es_trf_ner_cds_spanberta" [bert]="models/es_trf_ner_cds_bert")
+
+MODEL=$*
+BASEDIR="/path/to/NER-experiments"
+UTILSDIR="${BASEDIR}/utils"
+TEST_FILE="dataset/test.json"
+TEST_FILE_IOB="${BASEDIR}/datasets/test.iob"
 ###########################################################################
 
 ##### functions ###########################################################
@@ -46,64 +52,33 @@ is_valid_model()
     return 0
 }
 
-showhelp()
-{
-    echo "run_train.sh -m MODEL"
-    echo "  -m|--model MODEL      Model to fine-tune (${!models[@]})."
-    echo "  -t|--train FILE       Training corpus."
-    echo "  -v|--validation FILE  Validation corpus."
-    echo "  -h                    Show this help."
-    exit 0
-}
 ###########################################################################
 
 
-while [[ "$#" > 0 ]]; do case $1 in
-    -m|--model)
-        [[ -z $2 ]] && die "With this option you must provide an argument with the model." 
-        MODEL=$2 
-        is_valid_model
-        [ $? -ne 1 ] && die "Unsupported model. Please choose between: ${!models[@]}" 
-        shift 
-        shift
-        ;;
-    -t|--train)
-        [[ -z $2 ]] && die "With this option you must provide an argument with the model." 
-        ifile=$2
-        is_valid_file
-        [ $? -ne 1 ] && die "File '$2' does not exist."
-        TRAIN_FILE=${ifile}
-        shift
-        shift
-        ;;
-    -v|--validation)
-        [[ -z $2 ]] && die "With this option you must provide an argument with the model." 
-        ifile=$2
-        is_valid_file
-        [ $? -ne 1 ] && die "File '$2' does not exist."
-        VALIDATION_FILE=${ifile}
-        shift
-        shift
-        ;;
-    -h|--help)
-        shift
-        showhelp
-        ;;
-    *)
-        break
-esac; done
+[ -z "${MODEL}" ] && echo "must supply an argument" && exit 1
 
-[ -z ${MODEL} ] && MODEL="roberta-base-bne"
 OUTPUT_DIR=${output[${MODEL}]}
+TRANSFORMERS_MODEL=${models[${MODEL}]}
 
+sbatch <<EOT
+#!/bin/sh
+
+#SBATCH -J ${MODEL}
+#SBATCH --mem=24gb
+#SBATCH --time=05:00:00
+#SBATCH --output=trf-${MODEL}_%j.log
+#SBATCH -e trf-${MODEL}_%j_error.log
+#SBATCH --gres=gpu:A100_40:1
+
+echo "Starting training: ${MODEL}"
 time python3 run_ner.py \
-  --model_name_or_path ${MODEL} \
+  --model_name_or_path ${TRANSFORMERS_MODEL} \
   --train_file ${TRAIN_FILE} \
   --validation_file ${VALIDATION_FILE} \
   --output_dir ${OUTPUT_DIR} \
   --max_seq_length ${MAX_LENGTH} \
   --num_train_epochs ${NUM_EPOCHS} \
-  --per_gpu_train_batch_size ${BATCH_SIZE} \
+  --per_device_train_batch_size ${BATCH_SIZE} \
   --save_steps ${SAVE_STEPS} \
   --save_total_limit ${SAVE_TOTAL_LIMIT} \
   --logging_steps ${LOGGING_STEPS} \
@@ -114,3 +89,11 @@ time python3 run_ner.py \
   --load_best_model_at_end ${LOAD_BEST_MODEL_AT_END} \
   --evaluation_strategy ${EVAL_STRATEGY} \
   --save_strategy ${SAVE_STRATEGY}
+
+echo "Producing predictions to results/trf-${MODEL}_predictions.txt"
+time python predict_transformers.py --model ${OUTPUT_DIR} --output_file results/trf-${MODEL}_predictions.txt --test_file ${TEST_FILE} --train_file ${TRAIN_FILE}
+
+echo "Saving evaluation results to results/results_trf-${MODEL}.csv"
+time python ${UTILSDIR}/eval.py -o csv results/trf-${MODEL}_predictions.txt ${TEST_FILE_IOB} > results/results_trf-${MODEL}.csv
+
+EOT

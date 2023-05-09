@@ -5,5 +5,11 @@ Files used to fine-tune transformer models for the NER task in Spanish. The data
 | `PlanTL-GOB-ES/roberta-base-bne`     | [roberta-bne-ner-cds](https://huggingface.co/sdocio/roberta-bne-ner-cds) |
 | `xlm-roberta-large`                  | xlm-roberta-large-ner-cds |
 
-The dataset used to train both models will be released once personal data is fully anonymised.
+The script `predict_transformers.py` produces the resulting predictions in IOB format, which can be evaluated using `eval.py` and a testing dataset in IOB2 format.
 
+```bash
+$ python predict_transformers.py --model models/es_trf_ner_cds_bne-base --output_file predictions.iob --test_file dataset/test.json --train_file dataset/train.json
+$ python ../utils/eval.py predictions.iob ../datasets/test.iob
+```
+
+The dataset used to train both models will be released once personal data is fully anonymised.

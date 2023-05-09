@@ -4,10 +4,8 @@ Code adapted from https://github.com/yuhaozhang/neural-ner
 import argparse
 import os
 import random
-import sys
 import torch
 import warnings
-from seqeval.metrics import classification_report as seq_classification_report
 from tqdm import tqdm
 from neuralner.trainer import Trainer
 from neuralner.utils import torch_utils, constant
@@ -36,13 +34,6 @@ def parse_args():
         type=str,
         metavar='MODEL',
         help='model file',
-    )
-    parser.add_argument(
-        '-e',
-        '--eval',
-        action='store_true',
-        default=False,
-        help='Evaluation only',
     )
     parser.add_argument(
         '--seed',
@@ -97,13 +88,9 @@ predictions = [[id2label[p] for p in ps] for ps in predictions]
 golden = batch.gold()
 words = batch.words()
 
-if not args.eval:
-    assert len(golden) == len(words) == len(predictions), "Dataset size mismatch."  # noqa
-    for ws, gs, ps in zip(words, golden, predictions):
-        assert len(ws) == len(gs) == len(ps), "Example length mismatch."
-        for w, g, p in zip(ws, gs, ps):
-            print("{} {}".format(w, p))
-        print()
-
-results = seq_classification_report(golden, predictions, digits=3)
-print(results, file=sys.stderr)
+assert len(golden) == len(words) == len(predictions), "Dataset size mismatch."  # noqa
+for ws, gs, ps in zip(words, golden, predictions):
+    assert len(ws) == len(gs) == len(ps), "Example length mismatch."
+    for w, g, p in zip(ws, gs, ps):
+        print("{} {}".format(w, p))
+    print()

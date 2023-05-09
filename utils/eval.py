@@ -1,11 +1,15 @@
 import argparse
 import csv
 import sys
-import warnings
+import matplotlib.pyplot as plt
+import seaborn as sns
 from itertools import chain
-from seqeval.metrics import classification_report as seq_classification_report
+from seqeval.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 
-warnings.filterwarnings("ignore")
+TAGS = [
+    'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC', 'B-ORG', 'I-ORG', 'B-PER', 'I-PER'
+]
 
 
 class IOB:
@@ -71,11 +75,18 @@ def parse_args():
         help='stop eval if datasets have inconsistencies',
     )
     parser.add_argument(
-        '-c',
-        '--csv',
-        action='store_true',
-        default=False,
+        '-o',
+        '--output',
+        choices=['csv', 'plot', 'text'],
+        default='text',
         help='resulting metrics are converted into csv',
+    )
+    parser.add_argument(
+        '-p',
+        '--plot-file',
+        nargs=1,
+        default='cm.pdf',
+        help='filename to store the plot',
     )
 
     return parser.parse_args()
@@ -90,10 +101,6 @@ def check(data1, data2):
             f"Different number of tokens in line {i+1}")
 
 
-def flatten(y):
-    return list(chain.from_iterable(y))
-
-
 def fix(data1, data2):
     skip = 0
     for i in range(len(data1)-1, -1, -1):
@@ -101,7 +108,12 @@ def fix(data1, data2):
             del data1[i]
             del data2[i]
             skip += 1
-    print(f"Skipped {skip} inconsistent sentences.", file=sys.stderr)
+    if skip > 0:
+        print(f"Skipped {skip} inconsistent sentences.", file=sys.stderr)
+
+
+def flatten(y):
+    return list(chain.from_iterable(y))
 
 
 def convert_csv(results):
@@ -141,15 +153,30 @@ if args.strict is False:
     fix(golden_tags, dataset_tags)
 check(golden_tags, dataset_tags)
 
-if args.csv:
-    results = seq_classification_report(
+labels = sorted(
+    [label for label in TAGS],
+    key=lambda name: (name[1:], name[0]))
+
+if args.output == 'csv':
+    results = classification_report(
         golden_tags,
         dataset_tags,
         digits=3,
         output_dict=True)
     convert_csv(results)
+elif args.output == 'plot':
+    cm = confusion_matrix(
+        flatten(golden_tags), flatten(dataset_tags), normalize="true")
+    plt.figure(figsize=(8, 5))
+    fx = sns.heatmap(cm, annot=True, fmt=".3f", cmap="GnBu")
+    fx.set_xlabel('Predicted Values')
+    fx.set_ylabel('Actual Values')
+    fx.xaxis.set_ticklabels(labels + ["O"])
+    fx.yaxis.set_ticklabels(labels + ["O"])
+    fx.tick_params(axis="y", rotation=20)
+    plt.savefig(args.plot_file, format="pdf", bbox_inches="tight")
 else:
-    results = seq_classification_report(
+    results = classification_report(
         golden_tags,
         dataset_tags,
         digits=3)

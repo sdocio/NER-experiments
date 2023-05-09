@@ -135,7 +135,7 @@ doc/*
 */doc/*
 **/models/*
 model
-base_config.cfg
+base_config*.cfg
 datasets
 dataset
 */config.py
