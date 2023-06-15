@@ -1,0 +1,17 @@
+crf	0m52
+lstm-crf-glove	203m23
+lstm-crf-fast	202m46
+lstm-crf-w2vec	204m18
+spacy-cnn	14m1
+trf-bert	8m37
+trf-spanberta	8m23
+trf-bne-base	8m43
+trf-bne-large	18m11
+trf-xlm-base	9m40
+trf-xlm-large	21m11
+spacy-bert	33m40
+spacy-spanberta	23m44
+spacy-bne-base	31m53
+spacy-bne-large	87m5
+spacy-xlm-base	72m53
+spacy-xlm-large	85m15
