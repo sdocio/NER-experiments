@@ -1,4 +1,6 @@
 {
+  "data_dir": "dataset",
+  "vocab_dir": "dataset/vocab",
   "emb_dim": 300,
   "hidden_dim": 100,
   "num_layers": 1,
@@ -25,14 +27,16 @@
   "batch_size": 10,
   "max_grad_norm": 5.0,
   "log_step": 20,
-  "log": "training-rnn-lstm-crf.log",
+  "log": "training-lstm-crf.log",
   "save_epoch": 500,
-  "id": "1",
+  "save_dir": ".",
+  "id": "model",
   "info": "An LSTM-CRF NER model",
   "seed": 1234,
   "cuda": true,
   "cpu": false,
   "num_class": 10,
   "vocab_size": 18914,
-  "char_vocab_size": 95
+  "char_vocab_size": 95,
+  "model_save_dir": "./model"
 }
