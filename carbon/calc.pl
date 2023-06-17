@@ -5,7 +5,7 @@ use warnings;
 
 ##### config
 
-# carbon in local grid: gCO₂eq/kWh (https://app.electricitymaps.com)
+# carbon in local grid: kgCO₂eq/kWh (https://app.electricitymaps.com)
 my $cfg_effic = 0.2120;
 
 # PUE coefficient (Strubell et al., 2020)

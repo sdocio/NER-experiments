@@ -141,3 +141,4 @@ dataset
 */config.py
 **/results/*
 **/logs/*
+**/bin/*
