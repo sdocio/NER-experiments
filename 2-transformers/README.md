@@ -1,8 +1,8 @@
 Files used to fine-tune transformer models for the NER task in Spanish. The dataset used contained interviews in the domain of tourism related to the Way of Saint Jacques.
 
-| model                                | finetuned model |
+| base model                                | finetuned model |
 | ------------------------------------ | ---------------------------------------------------- |
-| `PlanTL-GOB-ES/roberta-base-bne`     | [roberta-bne-ner-cds](https://huggingface.co/sdocio/roberta-bne-ner-cds) |
+| `PlanTL-GOB-ES/roberta-base-bne`     | [es_trf_ner_cds_bne-base](https://huggingface.co/sdocio/es_trf_ner_cds_bne-base) |
 | `xlm-roberta-large`                  | xlm-roberta-large-ner-cds |
 
 The script `predict_transformers.py` produces the resulting predictions in IOB format, which can be evaluated using `eval.py` and a testing dataset in IOB2 format.
