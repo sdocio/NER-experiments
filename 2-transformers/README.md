@@ -3,7 +3,7 @@ Files used to fine-tune transformer models for the NER task in Spanish. The data
 | base model                                | finetuned model |
 | ------------------------------------ | ---------------------------------------------------- |
 | `PlanTL-GOB-ES/roberta-base-bne`     | [es_trf_ner_cds_bne-base](https://huggingface.co/sdocio/es_trf_ner_cds_bne-base) |
-| `xlm-roberta-large`                  | xlm-roberta-large-ner-cds |
+| `xlm-roberta-large`                  | [es_trf_ner_cds_xlm-large](https://huggingface.co/sdocio/es_trf_ner_cds_xlm-large) |
 
 The script `predict_transformers.py` produces the resulting predictions in IOB format, which can be evaluated using `eval.py` and a testing dataset in IOB2 format.
 
