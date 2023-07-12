@@ -11,7 +11,7 @@ from config import version, test_size, random_state, shuffle
 
 
 def parse_args():
-    description = "Train a CRF model for NER from IOB2 datasets."
+    description = "Use RandomizedSearchCV to optimize hyperparameters."
 
     parser = argparse.ArgumentParser(
         description=description,
@@ -69,11 +69,11 @@ train, test = train_test_split(
     shuffle=shuffle
 )
 
-X = [feats.sent2features(s) for s in sentences]
-y = [feats.sent2labels(s) for s in sentences]
+X_train = [feats.sent2features(s) for s in train]
+y_train = [feats.sent2labels(s) for s in train]
 
 sorted_labels = sorted(
-    [label for label in set(flatten(y)) if label != 'O'],
+    [label for label in set(flatten(y_train)) if label != 'O'],
     key=lambda name: (name[1:], name[0]))
 
 param_grid = {
@@ -94,7 +94,7 @@ rs = RandomizedSearchCV(estimator=crf,
                         random_state=random_state,
                         n_jobs=-1)
 
-rs.fit(X, y)
+rs.fit(X_train, y_train)
 
 for k, v in rs.best_estimator_.get_params().items():
     print('{}: {}'.format(k, v))
