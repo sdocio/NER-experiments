@@ -1,0 +1,31 @@
+Etiqueta un texto usando etiquetas NER y en formato IOB2. La salida debe tener el mismo número de líneas que la entrada, y las palabras han de ser las mismas. Por ejemplo, para el texto "La Universidad de Santiago tiene su sede principal en Santiago de Compostela. La Compostela es el certificado que Juan recibió tras hacer el Camino.", la salida correcta es:
+
+La O
+Universidad B-ORG
+de I-ORG
+Santiago I-ORG
+tiene O
+su O
+sede O
+principal O
+en O
+Santiago B-LOC
+de I-LOC
+Compostela I-LOC
+. O
+
+La O
+Compostela B-MISC
+es O
+el O
+certificado O
+que O
+Juan B-PER
+recibió O
+tras O
+hacer O
+el O
+Camino B-LOC
+. O
+
+El texto que debes etiquetar es
