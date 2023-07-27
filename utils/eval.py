@@ -7,7 +7,7 @@ import sys
 from itertools import chain
 import matplotlib.pyplot as plt
 import seaborn as sns
-from seqeval.metrics import classification_report
+from seqeval.metrics import classification_report, accuracy_score
 from sklearn.metrics import confusion_matrix
 
 TAGS = [
@@ -90,6 +90,13 @@ def parse_args() -> argparse.Namespace:
         action='store_true',
         default=False,
         help='stop eval if datasets have inconsistencies',
+    )
+    parser.add_argument(
+        '-a',
+        '--accuracy',
+        action='store_true',
+        default=False,
+        help='include accuracy in text report',
     )
     parser.add_argument(
         '-o',
@@ -210,6 +217,8 @@ def evaluate() -> None:
             dataset_tags,
             digits=3)
         print(eval_results)
+        if args.accuracy:
+            print("Accuracy:", accuracy_score(golden_tags, dataset_tags))
 
 
 if __name__ == "__main__":
